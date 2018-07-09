@@ -31,15 +31,17 @@ class RulesView(View):
             validate_rule_json(new_rule)
         except RuleValidationException as e:
             return error('error validating json: {}'.format(e))
-        # Create rule
-        # Save
+        rule = Rule()
+        rule.populate(new_rule)
+        rule.save()
+        return success(rule.summary())
 
 
 class RuleView(SingleObjectMixin, View):
 
     def get(self, request):
         rule = self.get_object()
-        return HttpResponse(success(rule.summary()))
+        return success(rule.summary())
 
     def post(self, request, *args, **kwargs):
         rule = self.get_object()
@@ -51,9 +53,21 @@ class RuleView(SingleObjectMixin, View):
             validate_rule_json(updates)
         except RuleValidationException as e:
             return error('error validating json: {}'.format(e))
-        # Copy rule fields to new rulechange and save
-        # Update rule
-        # Save
+        change = RuleChange(
+            user=updates['user'],
+            comment=updates['comment'])
+        change.populate(rule.full_values())
+        if rule.enabled and not updates['enabled']:
+            change.change_type = 'd'
+        else:
+            change.change_type = 'u'
+        change.save()
+        rule.populate(updates)
+        rule.save()
+        return success({
+            'rule': rule.summary(),
+            'change': change.summary(),
+        })
 
     def delete(self, request, *args, **kwargs):
         rule = self.get_object()

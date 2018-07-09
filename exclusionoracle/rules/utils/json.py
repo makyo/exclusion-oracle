@@ -1,12 +1,14 @@
 import json
 
+from django.http import HttpResponse
+
 
 def success(obj):
-    return json.dumps({
+    return HttpResponse(json.dumps({
         'status': 'success',
         'message': 'ok',
         'result': obj,
-    })
+    }), content_type='application/json')
 
 
 def error(message, obj):
@@ -16,4 +18,5 @@ def error(message, obj):
     }
     if obj is not None:
         result['result'] = obj
-    return json.dumps(result)
+    return HttpResponse(json.dumps(result),
+                        content_type='application/json')

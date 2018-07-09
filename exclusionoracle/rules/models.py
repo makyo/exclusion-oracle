@@ -1,4 +1,10 @@
+from datetime import datetime
+
 from django.db import models
+
+
+def parseDate(date_str):
+    return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%fZ")
 
 
 class RuleBase(models.Model):
@@ -10,10 +16,10 @@ class RuleBase(models.Model):
 
     policy = models.CharField(max_length=1, choices=POLICY_CHOICES)
     surt = models.TextField()
-    capture_start = models.DateField()
-    capture_end = models.DateField()
-    retrieval_start = models.CharField(max_length=10)
-    retrieval_end = models.CharField(max_length=10)
+    capture_start = models.DateTimeField()
+    capture_end = models.DateTimeField()
+    retrieval_start = models.DateTimeField()
+    retrieval_end = models.DateTimeField()
     seconds_since_capture = models.IntegerField()
     who = models.CharField(max_length=50)
     private_comment = models.TextField(blank=True)
@@ -31,9 +37,12 @@ class RuleBase(models.Model):
         self.retrieval_end = values['retrieval_end']
         self.seconds_since_capture = values['seconds_since_capture']
         self.who = values['who']
-        self.public_comment = values['public_comment']
-        self.private_comment = values['private_comment']
         self.enabled = values['enabled']
+        # Optional arguments
+        if 'public_comment' in values:
+            self.public_comment = values['public_comment']
+        if 'private_comment' in values:
+            self.private_comment = values['private_comment']
 
 
 class Rule(RuleBase):
@@ -69,7 +78,7 @@ class RuleChange(RuleBase):
         Rule,
         on_delete=models.CASCADE,
         related_name='rule_change')
-    change_date = models.DateField(auto_now=True)
+    change_date = models.DateTimeField(auto_now=True)
     change_user = models.TextField()
     change_comment = models.TextField()
     change_type = models.CharField(max_length=1, choices=TYPE_CHOICES)

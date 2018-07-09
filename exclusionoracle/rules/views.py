@@ -1,16 +1,18 @@
+import json
+
 from django.shortcuts import render
 from django.views import View
 from django.views.generic.detail import SingleObjectMixin
 
-from models import (
+from .models import (
     Rule,
     RuleChange,
 )
-from utils.json import (
+from .utils.json import (
     error,
     success,
 )
-from utils.validators import (
+from .utils.validators import (
     RuleValidationException,
     validate_rule_json,
 )
@@ -39,6 +41,8 @@ class RulesView(View):
 
 class RuleView(SingleObjectMixin, View):
 
+    model = Rule
+
     def get(self, request):
         rule = self.get_object()
         return success(rule.summary())
@@ -46,16 +50,17 @@ class RuleView(SingleObjectMixin, View):
     def post(self, request, *args, **kwargs):
         rule = self.get_object()
         try:
-            updates = json.loads(request.body)
-        except:
-            return error('unable to marshal json')
+            updates = json.loads(request.body.decode('utf-8'))
+        except Exception as e:
+            return error('unable to marshal json', str(e))
         try:
             validate_rule_json(updates)
         except RuleValidationException as e:
-            return error('error validating json: {}'.format(e))
+            return error('error validating json', str(e))
         change = RuleChange(
-            user=updates['user'],
-            comment=updates['comment'])
+            rule=rule,
+            change_user=updates['user'],
+            change_comment=updates['comment'])
         change.populate(rule.full_values())
         if rule.enabled and not updates['enabled']:
             change.change_type = 'd'

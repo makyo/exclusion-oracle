@@ -1,6 +1,14 @@
+from datetime import datetime
 import json
 
 from django.http import HttpResponse
+
+
+class DateTimeEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, datetime):
+            return o.isoformat()
+        return super(DateTimeEncoder, self).default(o)
 
 
 def success(obj):
@@ -8,7 +16,7 @@ def success(obj):
         'status': 'success',
         'message': 'ok',
         'result': obj,
-    }), content_type='application/json')
+    }, cls=DateTimeEncoder), content_type='application/json')
 
 
 def error(message, obj):
@@ -18,5 +26,5 @@ def error(message, obj):
     }
     if obj is not None:
         result['result'] = obj
-    return HttpResponse(json.dumps(result),
+    return HttpResponse(json.dumps(result, cls=DateTimeEncoder),
                         content_type='application/json')

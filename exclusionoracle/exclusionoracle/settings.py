@@ -27,6 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'work.drab-makyo.com',
+    'localhost',
 ]
 
 

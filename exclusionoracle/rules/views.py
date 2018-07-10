@@ -127,7 +127,11 @@ def rules_for_request(request):
             (capture_date > start and capture_date < end)):
             applicable_rules.append(rule)
     # Here is where we would make a surface-level decision on the action to
-    # be taken (block, auth, allow, rewrite, etc)
+    # be taken (block, auth, allow, rewrite, etc). A point of optimization would
+    # be to use django to only select the rules matching the date range, but for
+    # now, we select the whole tree. Also, date comparisons would probably be
+    # faster than coercing to strings, then to ints, but I was running short
+    # on time.
     return success([rule.summary() for rule in applicable_rules])
 
 # Stub out how rules apply

@@ -77,11 +77,15 @@ class Rule(RuleBase):
         summary['private_comment'] = self.private_comment
         return summary
 
+    def __str__(self):
+        return '{} {}'.format(self.get_policy_display().upper(), self.surt)
+
     class Meta:
         indexes = [
             models.Index(fields=['surt'])
             # Any additional indices would be created here.
         ]
+        ordering = ['surt']
 
 
 class RuleChange(RuleBase):

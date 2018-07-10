@@ -97,3 +97,7 @@ def tree(request, surt_string):
 def decide(request):
     surt = request.GET.get('surt')
     warc = request.GET.get('warc')
+    capture_date = request.GET.get('capture-date')
+    if surt is None or warc is None or capture_date is None:
+        return error('surt, warc, and capture-date query string params'
+                     ' are all required', {})

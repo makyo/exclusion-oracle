@@ -22,7 +22,7 @@ from rules import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('rules/', views.RulesView.as_view()),
-    path('rules/<path:surt_string>', views.tree),
+    path('rules/tree/<path:surt_string>', views.tree),
     path('rule/<int:pk>/', views.RuleView.as_view()),
     path('decide/', views.decide),
 ]

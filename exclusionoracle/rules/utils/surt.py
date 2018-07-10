@@ -1,8 +1,11 @@
-# XXX This is a simple implementation of a SURT library and not meant to be authoratitive
+# XXX This is a simple implementation of a SURT library and not meant to be
+# authoratitive, as something doubtless already exists
 
 class Surt(object):
+    """Represents a surt broken down into its component parts."""
 
     def __init__(self, surt):
+        """Attempts to parse a surt string into its component parts."""
         self._surt = surt
         try:
             self.protocol, surt = surt.split('://(')

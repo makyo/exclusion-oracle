@@ -1,13 +1,9 @@
-from datetime import datetime
-
 from django.db import models
 
 
-def parseDate(date_str):
-    return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%fZ")
-
-
 class RuleBase(models.Model):
+    """Abstract model representing the base fields for rules and changes."""
+
     POLICY_CHOICES = (
         ('b', 'block'),
         ('a', 'allow'),
@@ -24,7 +20,7 @@ class RuleBase(models.Model):
 
     policy = models.CharField(max_length=1, choices=POLICY_CHOICES)
     rule_type = models.CharField(max_length=10, choices=RULE_TYPES)
-    # payload
+    # We would also include a payload field here for any rewrite data and such
     surt = models.TextField()
     capture_start = models.DateTimeField()
     capture_end = models.DateTimeField()
@@ -40,6 +36,7 @@ class RuleBase(models.Model):
         abstract = True
 
     def populate(self, values):
+        """Given an object a la `summary`, populate the given fields."""
         self.surt = values['surt']
         self.capture_start = values['capture_start']
         self.capture_end = values['capture_end']
@@ -56,8 +53,10 @@ class RuleBase(models.Model):
 
 
 class Rule(RuleBase):
+    """Represents a rule for exclusion, inclusion, or modification."""
 
     def summary(self):
+        """Returns an object with publicly visible fields."""
         return {
             'id': self.id,
             'policy': self.get_policy_display(),
@@ -73,12 +72,21 @@ class Rule(RuleBase):
         }
 
     def full_values(self):
+        """Returns the summary plus the private comment."""
         summary = self.summary()
         summary['private_comment'] = self.private_comment
         return summary
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['surt'])
+            # Any additional indices would be created here.
+        ]
+
 
 class RuleChange(RuleBase):
+    """Represents a change to a rule in the database."""
+
     TYPE_CHOICES = (
         ('c', 'created'),
         ('u', 'updated'),
@@ -94,6 +102,7 @@ class RuleChange(RuleBase):
     change_type = models.CharField(max_length=1, choices=TYPE_CHOICES)
 
     def summary(self):
+        """Returns an object with all non-rule fields."""
         return {
             'id': self.id,
             'rule_id': self.rule.id,
@@ -101,4 +110,25 @@ class RuleChange(RuleBase):
             'user': self.change_user,
             'comment': self.change_comment,
             'type': self.get_change_type_display(),
+        }
+
+    def full_change(self):
+        return {
+            'id': self.id,
+            'rule_id': self.rule.id,
+            'date': self.change_date,
+            'user': self.change_user,
+            'comment': self.change_comment,
+            'type': self.get_change_type_display(),
+            'policy': self.get_policy_display(),
+            'surt': self.surt,
+            'capture_start': self.capture_start,
+            'capture_end': self.capture_end,
+            'retrieval_start': self.retrieval_start,
+            'retrieval_end': self.retrieval_end,
+            'seconds_since_capture': self.seconds_since_capture,
+            'who': self.who,
+            'public_comment': self.public_comment,
+            'private_comment': self.private_comment,
+            'enabled': self.enabled,
         }

@@ -21,8 +21,8 @@ from rules import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('rules/', views.RulesView.as_view()),
+    path('rules', views.RulesView.as_view()),
     path('rules/tree/<path:surt_string>', views.tree),
-    path('rule/<int:pk>/', views.RuleView.as_view()),
-    path('decide/', views.decide),
+    path('rules/for-request', views.rules_for_request),
+    path('rule/<int:pk>', views.RuleView.as_view()),
 ]

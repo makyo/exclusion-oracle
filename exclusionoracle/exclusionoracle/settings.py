@@ -25,7 +25,9 @@ SECRET_KEY = '_*o-7h7433i&wv&3afsrjz6ngsk&(o^&2t4%ttn!phwwsr-5hv'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'work.drab-makyo.com',
+]
 
 
 # Application definition

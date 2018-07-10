@@ -12,6 +12,8 @@ from .utils.json import (
     error,
     success,
 )
+from .utils.surt import Surt
+from .utils.tree import tree_for_surt
 from .utils.validators import (
     RuleValidationException,
     validate_rule_json,
@@ -21,18 +23,24 @@ from .utils.validators import (
 class RulesView(View):
 
     def get(self, request, *args, **kwargs):
-        rules = [rule.summary() for rule in Rule.objects.all()]
-        return success(rules)
+        if request.GET.get('surt-exact') is not None:
+            rules = Rule.objects.filter(surt=request.GET.get('surt-exact'))
+        elif request.GET.get('surt-start') is not None:
+            rules = Rule.objects.filter(
+                surt__startswith=request.GET.get('surt-start'))
+        else:
+            rules = Rule.objects.all()
+        return success([rule.summary() for rule in rules])
 
     def put(self, request, *args, **kwargs):
         try:
             new_rule = json.loads(request.body)
-        except:
-            return error('unable to marshal json')
+        except Exception as e:
+            return error('unable to marshal json', str(e))
         try:
             validate_rule_json(new_rule)
         except RuleValidationException as e:
-            return error('error validating json: {}'.format(e))
+            return error('error validating json', str(e))
         rule = Rule()
         rule.populate(new_rule)
         rule.save()
@@ -78,3 +86,14 @@ class RuleView(SingleObjectMixin, View):
         rule = self.get_object()
         rule.delete()
         return success({})
+
+
+def tree(request, surt_string):
+    surt = Surt(surt_string)
+    tree = [rule.summary() for rule in tree_for_surt(surt)]
+    return success(tree)
+
+
+def decide(request):
+    surt = request.GET.get('surt')
+    warc = request.GET.get('warc')

@@ -14,7 +14,17 @@ class RuleBase(models.Model):
         ('r', 'robots'),
     )
 
+    RULE_TYPES = (
+        ('surt', 'SURT'),
+        ('surt-neg', 'SURT negation'),
+        ('regex', 'regular expression'),
+        ('daterange', 'date range'),
+        ('warcname', 'WARC name (or regex)'),
+    )
+
     policy = models.CharField(max_length=1, choices=POLICY_CHOICES)
+    rule_type = models.CharField(max_length=10, choices=RULE_TYPES)
+    # payload
     surt = models.TextField()
     capture_start = models.DateTimeField()
     capture_end = models.DateTimeField()
